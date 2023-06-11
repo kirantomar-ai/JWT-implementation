@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Utopia-Backend</title>
+</head>
+<body>
+    <div style="background-color: bisque; padding:5px;">
+        <h1>Sign-up</h1>
+        <form id="sign-up">
+            <input type="email" id="sign-up-email" autocomplete="off" placeholder="user@xyz.com"/>
+            <input type="password" id="sign-up-password" autocomplete="off" placeholder="password"/>
+            <input type="submit" value="Submit Form"/>
+        </form>
+    </div>
+    <hr/>
+    <div style="background-color: pink;padding:5px;">
+        <h1>Login </h1>
+        <form id="login">
+            <input type="email" id="login-email" autocomplete="off" placeholder="user@xyz.com"/>
+            <input type="password" id="login-password" autocomplete="off" placeholder="password"/>
+            <input type="submit" value="Submit Form"/>
+        </form>
+    </div>
+    <hr/>
+    <div style="background-color:papayawhip;padding:5px;">
+        <h1>Delete user details</h1>
+        <button id="delete">Delete</button>
+    </div>
+    
+    <hr/>
+    <div style="background-color:powderblue;padding:5px;">
+        <h1>Test Api call</h1>
+        <button id="test">Test</button>
+        <h5 id="test-text">api response from server: No Api call till now</h5>
+    </div>
+    
+
+    <script>
+            const signupForm = document.getElementById('sign-up')
+            signupForm.addEventListener('submit', signUpUser)
+
+            async function signUpUser(event) {
+                event.preventDefault()
+                const email = document.getElementById('sign-up-email').value
+                const password = document.getElementById('sign-up-password').value
+
+                const result = await fetch('/api/sign-up', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                })
+                .then((res) => res.json())
+
+                if (result.status === 'ok') {
+                    console.log(result)
+                }
+                else {
+                    alert('result.error')
+                }
+            } 
+
+
+            const loginForm = document.getElementById('login')
+            loginForm.addEventListener('submit', loginUser)
+
+            async function loginUser(event) {
+                event.preventDefault()
+                const email = document.getElementById('login-email').value
+                const password = document.getElementById('login-password').value
+
+                const result = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                })
+                .then((res) => res.json())
+
+                if (result.status === 'ok' && 'accessToken' in result && 'refreshToken' in result) {
+                    console.log(result)
+                    localStorage.setItem('accessToken',result.accessToken)
+                    localStorage.setItem('refreshToken',result.refreshToken)
+                }
+                else {
+                    alert('result.error')
+                }
+            }
+            const deleteUser = document.getElementById('delete')   
+            deleteUser.addEventListener('click',deleteHandler)   
+            
+            async function deleteHandler(event){
+                // alert('delete is working')
+                const result= await fetch('/api/delete', {
+                        method:'POST',
+                    headers:{
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        accessToken: localStorage.getItem('accessToken')
+                    })
+                })
+                .then((res) => res.json())
+                console.log('delteHandler',result)
+            }
+
+            
+            const testElement = document.getElementById('test')   
+            testElement.addEventListener('click',testAPIHandler)   
+            async function testAPIHandler(event){
+                alert('test')
+                const result= await fetch('/api/test', {
+                    method:'POST',
+                    headers:{
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        accessToken: localStorage.getItem('accessToken')
+                    })
+                })
+                .then((res) => res.json())
+                .then(res=>{
+                    document.getElementById('test-text').innerHTML = JSON.stringify(res)
+                })
+                
+            }
+            
+    </script>
+
+</body>
+</html>
